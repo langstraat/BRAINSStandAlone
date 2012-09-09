@@ -4,7 +4,7 @@
 
 /** constructors */
 BRAINSCutDataHandler
-::BRAINSCutDataHandler( std::string modelConfigurationFilename )
+::BRAINSCutDataHandler( const std::string modelConfigurationFilename )
 {
   try
     {
@@ -31,7 +31,7 @@ BRAINSCutDataHandler
 
     elementList.push_front( myConfiguration );
 
-    XMLConfigurationFileParser BRAINSCutXMLConfigurationFileParser = 
+    XMLConfigurationFileParser BRAINSCutXMLConfigurationFileParser =
       XMLConfigurationFileParser( myConfigurationFilename );
     BRAINSCutXMLConfigurationFileParser.SetUserData( &elementList );
     BRAINSCutXMLConfigurationFileParser.Parse();
@@ -73,9 +73,9 @@ void
 BRAINSCutDataHandler
 ::SetRhoPhiTheta()
 {
-  rho = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("rho") );
-  phi = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("phi") );
-  theta = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("theta") );
+  this->m_rho = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("rho") );
+  this->m_phi = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("phi") );
+  this->m_theta = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("theta") );
 
 }
 
@@ -88,37 +88,36 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetNetConfigurationFilename()
+::GetNetConfigurationFilename() const
 {
   return myConfigurationFilename;
 }
 
 int
 BRAINSCutDataHandler
-::GetTrainIteration()
+::GetTrainIteration() const
 {
-  int trainIteration = myConfiguration->Get<TrainingParameters>("ANNParameters")
+  const int trainIteration = myConfiguration->Get<TrainingParameters>("ANNParameters")
                             ->GetAttribute<IntValue>("Iterations");
-
   return trainIteration;
 }
 
 DataSet::StringVectorType
 BRAINSCutDataHandler
-::GetROIIDsInOrder()
+::GetROIIDsInOrder() const
 {
-  return roiIDsInOrder;
+  return this->m_roiIDsInOrder;
 }
 
 void
 BRAINSCutDataHandler
 ::SetRegionsOfInterest()
 {
-  roiDataList = myConfiguration->Get<ProbabilityMapList>("ProbabilityMapList");
-  roiIDsInOrder = roiDataList->CollectAttValues<ProbabilityMapParser>("StructureID");
+  this->m_roiDataList = myConfiguration->Get<ProbabilityMapList>("ProbabilityMapList");
+  this->m_roiIDsInOrder = this->m_roiDataList->CollectAttValues<ProbabilityMapParser>("StructureID");
 
-  std::sort( roiIDsInOrder.begin(), roiIDsInOrder.end() ); // get l_caudate, l_globus, .. , r_caudate, r_globus..
-  roiCount = roiDataList->size();
+  std::sort( this->m_roiIDsInOrder.begin(), this->m_roiIDsInOrder.end() ); // get l_caudate, l_globus, .. , r_caudate, r_globus..
+  roiCount = this->m_roiDataList->size();
 }
 
 /** registration related */
@@ -130,7 +129,7 @@ BRAINSCutDataHandler
   registrationParser =
     myConfiguration->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
 
-  SetRegistrationImageTypeToUse ( 
+  SetRegistrationImageTypeToUse (
       std::string( registrationParser->GetAttribute<StringValue>( "ImageTypeToUse") ) );
 
   registrationID = std::string(
@@ -148,7 +147,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetRegistrationImageTypeToUse()
+::GetRegistrationImageTypeToUse() const
 {
   if( registrationImageTypeToUse.empty() )
   {
@@ -160,7 +159,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetRegistrationID()
+::GetRegistrationID() const
 {
   if( registrationID.empty() )
   {
@@ -172,7 +171,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetSubjectToAtlasRegistrationFilename( DataSet& subject)
+::GetSubjectToAtlasRegistrationFilename( DataSet& subject) const
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename");
@@ -181,7 +180,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetAtlasToSubjectRegistrationFilename( DataSet& subject)
+::GetAtlasToSubjectRegistrationFilename( DataSet& subject) const
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename");
@@ -191,7 +190,7 @@ BRAINSCutDataHandler
 void
 BRAINSCutDataHandler
 ::GetDeformedSpatialLocationImages( std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
-                                    DataSet& subject)
+                                    DataSet& subject) const
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
@@ -202,8 +201,8 @@ BRAINSCutDataHandler
   if( !itksys::SystemTools::FileExists( subjectFilenameToUse.c_str(), false ) )
     {
     std::cout << " Subject image file of "
-              << subjectFilenameToUse 
-              << ", type of " << registrationImageTypeToUse 
+              << subjectFilenameToUse
+              << ", type of " << registrationImageTypeToUse
               << ", does not exist. "
               << std::endl;
     exit(EXIT_FAILURE);
@@ -218,25 +217,25 @@ BRAINSCutDataHandler
                                         ("rho", GenericTransformImage<WorkingImageType,
                                                                       WorkingImageType,
                                                                       DisplacementFieldType>
-                                          ( rho, referenceImage, deformation, genericTransform,
+                                          ( this->m_rho, referenceImage, deformation, genericTransform,
                                           0.0, "Linear", transoformationPixelType == "binary") ) );
   warpedSpatialLocationImages.insert( std::pair<std::string, WorkingImagePointer>
                                         ("phi", GenericTransformImage<WorkingImageType,
                                                                       WorkingImageType,
                                                                       DisplacementFieldType>
-                                          ( phi, referenceImage, deformation, genericTransform,
+                                          ( this->m_phi, referenceImage, deformation, genericTransform,
                                           0.0, "Linear", transoformationPixelType == "binary") ) );
   warpedSpatialLocationImages.insert( std::pair<std::string, WorkingImagePointer>
                                         ("theta", GenericTransformImage<WorkingImageType,
                                                                         WorkingImageType,
                                                                         DisplacementFieldType>
-                                          ( theta, referenceImage, deformation, genericTransform,
+                                          ( this->m_theta, referenceImage, deformation, genericTransform,
                                           0.0, "Linear", transoformationPixelType == "binary") ) );
 }
 
 void
 BRAINSCutDataHandler
-::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
+::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject) const
 {
   DataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
   std::sort( imageListFromAtlas.begin(), imageListFromAtlas.end() );            // SG, T1, T2, ... ascending order
@@ -253,9 +252,9 @@ BRAINSCutDataHandler
 void
 BRAINSCutDataHandler
 ::GetDeformedROIs( std::map<std::string, WorkingImagePointer>& warpedROIs,
-                   DataSet& subject)
+                   DataSet& subject) const
 {
-  std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
+  const std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
   /** Get the transformation file
    * Note that only one of transformation type will be used. Either deformation or transformation
@@ -268,11 +267,11 @@ BRAINSCutDataHandler
     ReadImageByFilename( subject.GetImageFilenameByType(registrationImageTypeToUse) );
 
   const std::string transformationPixelType = "float";
-  for( DataSet::StringVectorType::iterator roiTyIt = roiIDsInOrder.begin();
-       roiTyIt != roiIDsInOrder.end();
+  for( DataSet::StringVectorType::const_iterator roiTyIt = this->m_roiIDsInOrder.begin();
+       roiTyIt != this->m_roiIDsInOrder.end();
        ++roiTyIt )
     {
-    std::string roiFilename = roiDataList->GetMatching<ProbabilityMapParser>( "StructureID", (*roiTyIt).c_str() )
+    const std::string roiFilename = this->m_roiDataList->GetMatching<ProbabilityMapParser>( "StructureID", (*roiTyIt).c_str() )
       ->GetAttribute<StringValue>("Filename");
     WorkingImagePointer currentROI = ReadImageByFilename( roiFilename );
 
@@ -299,14 +298,14 @@ void
 BRAINSCutDataHandler
 ::SetGradientSize()
 {
-  gradientSize = trainingVectorConfiguration->GetAttribute<IntValue>("GradientProfileSize");
+  this->m_gradientSize = trainingVectorConfiguration->GetAttribute<IntValue>("GradientProfileSize");
 }
 
 unsigned int
 BRAINSCutDataHandler
-::GetGradientSize()
+::GetGradientSize() const
 {
-  return gradientSize ;
+  return this->m_gradientSize ;
 }
 
 void
@@ -315,7 +314,7 @@ BRAINSCutDataHandler
 {
   std::string normalizationString;
   try
-    { 
+    {
     normalizationString = trainingVectorConfiguration->GetAttribute<StringValue>("Normalization");
     }catch( BRAINSCutExceptionStringHandler& e)
     {
@@ -335,7 +334,7 @@ BRAINSCutDataHandler
 }
 bool
 BRAINSCutDataHandler
-::GetNormalization()
+::GetNormalization() const
 {
   return normalization;
 }
@@ -343,7 +342,7 @@ BRAINSCutDataHandler
 /** model file name */
 std::string
 BRAINSCutDataHandler
-::GetModelBaseName( )
+::GetModelBaseName( ) const
 {
   std::string basename;
   try
@@ -361,34 +360,35 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetANNModelFilename( )
+::GetANNModelFilename( ) const
 {
-  return ANNModelFilename;
+  return this->m_ANNModelFilename;
 }
 
+#if 0
 std::string
 BRAINSCutDataHandler
-::GetANNModelFilenameAtIteration( const int iteration)
+::GetANNModelFilenameAtIteration( const int iteration) const
 {
-  SetANNModelFilenameAtIteration( iteration );
-  return ANNModelFilename;
+  return this->m_ANNModelFilename;
 }
+#endif
 
 void
 BRAINSCutDataHandler
 ::SetANNModelFilenameAtIteration( const int iteration)
 {
-  ANNModelFilename = GetModelBaseName();
+  this->m_ANNModelFilename = GetModelBaseName();
 
   char temp[10];
   sprintf( temp, "%09d", iteration );
-  ANNModelFilename += temp;
+  this->m_ANNModelFilename += temp;
 }
 
 std::string
 BRAINSCutDataHandler
-::GetRFModelFilename( int depth,
-                      int NTrees)
+::GetRFModelFilename( const int depth,
+                      const int NTrees) const
 {
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   std::string basename = GetModelBaseName();
@@ -402,65 +402,73 @@ BRAINSCutDataHandler
   sprintf( tempNTrees, "%04u", NTrees );
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
-  std::string filename = basename + "D"+tempDepth+"NT"+tempNTrees+".gz";
+  std::string filename = basename + "D"+tempDepth+"NT"+tempNTrees;
+  if( !itksys::SystemTools::FileExists( filename.c_str(), false ) )
+    {
+    filename+=".gz";
+    if( !itksys::SystemTools::FileExists( filename.c_str(), false ) )
+      {
+      filename="ERROR_NO_FILENAME_FOUND";
+      }
+    }
 
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  std::cout<<__LINE__<<"::"<<__FILE__<< "  RFModelFilename: "<< filename << std::endl;
   return filename;
 }
 
 std::string
 BRAINSCutDataHandler
-::GetAtlasFilename()
+::GetAtlasFilename() const
 {
   return atlasFilename;
 }
 
 std::string
 BRAINSCutDataHandler
-::GetAtlasBinaryFilename()
+::GetAtlasBinaryFilename() const
 {
   return atlasBinaryFilename;
 }
 
 int
 BRAINSCutDataHandler
-::GetROIAutoDilateSize()
+::GetROIAutoDilateSize() const
 {
   return roiAutoDilateSize;
 }
 
 unsigned int
 BRAINSCutDataHandler
-::GetROICount()
+::GetROICount() const
 {
   return roiCount;
 }
 
 WorkingImagePointer
 BRAINSCutDataHandler
-::GetAtlasImage()
+::GetAtlasImage() const
 {
   return atlasImage;
 }
-ProbabilityMapList *  
+ProbabilityMapList *
 BRAINSCutDataHandler
-::GetROIDataList()
+::GetROIDataList() const
 {
-  return roiDataList;
+  return this->m_roiDataList;
 }
 
 DataSet *
 BRAINSCutDataHandler
-::GetAtlasDataSet()
+::GetAtlasDataSet() const
 {
   return atlasDataSet;
 }
 
 scalarType
 BRAINSCutDataHandler
-::GetANNOutputThreshold()
+::GetANNOutputThreshold() const
 {
-  scalarType annOutputThreshold =
+  const scalarType annOutputThreshold =
     myConfiguration->Get<ApplyModelType>("ApplyModel")
               ->GetAttribute<FloatValue>("MaskThresh");
   if( annOutputThreshold < 0.0F )
@@ -472,19 +480,19 @@ BRAINSCutDataHandler
 }
 
 //
-// Apply related 
+// Apply related
 //
 void
 BRAINSCutDataHandler
 ::SetRandomForestModelFilename(std::string name)
-{    
-  RandomForestModelFilename = name;
+{
+  this->m_RandomForestModelFilename = name;
 }
 
 void
 BRAINSCutDataHandler
 ::SetRandomForestModelFilename(int depth, int nTree)
-{    
+{
   if( depth < 0 && nTree <0 )
     {
     nTree= myConfiguration->Get<TrainingParameters>("RandomForestParameters")
@@ -492,14 +500,14 @@ BRAINSCutDataHandler
     depth= myConfiguration->Get<TrainingParameters>("RandomForestParameters")
                             ->GetAttribute<IntValue>("MaxTreeCount");
     }
-  RandomForestModelFilename =  GetRFModelFilename( depth, nTree );
+  this->m_RandomForestModelFilename =  GetRFModelFilename( depth, nTree );
 }
 
-std::string 
+std::string
 BRAINSCutDataHandler
-::GetRandomForestModelFilename()
+::GetRandomForestModelFilename() const
 {
-  return RandomForestModelFilename;
+  return this->m_RandomForestModelFilename;
 }
 
 void
@@ -510,9 +518,9 @@ BRAINSCutDataHandler
   ANNTestingSSEFilename += "ValidationSetSSE.txt";
 }
 
-std::string 
+std::string
 BRAINSCutDataHandler
-::GetANNTestingSSEFilename()
+::GetANNTestingSSEFilename() const
 {
   return ANNTestingSSEFilename;
 }
@@ -521,7 +529,7 @@ void
 BRAINSCutDataHandler
 ::SetTrainVectorFilename()
 {
-  trainVectorFilename = 
+  trainVectorFilename =
     trainingVectorConfiguration->GetAttribute<StringValue>("TrainingVectorFilename");
   trainVectorFilename += "ANN"; // TODO
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -531,7 +539,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetTrainVectorFilename()
+::GetTrainVectorFilename() const
 {
   if( trainVectorFilename.empty() )
   {
@@ -543,7 +551,7 @@ BRAINSCutDataHandler
 
 BRAINSCutConfiguration::TrainDataSetListType
 BRAINSCutDataHandler
-::GetTrainDataSet()
+::GetTrainDataSet() const
 {
   BRAINSCutConfiguration::TrainDataSetListType trainDataSetList;
   try
@@ -560,7 +568,7 @@ BRAINSCutDataHandler
 
 BRAINSCutConfiguration::ApplyDataSetListType
 BRAINSCutDataHandler
-::GetApplyDataSet()
+::GetApplyDataSet() const
 {
   BRAINSCutConfiguration::ApplyDataSetListType applyDataSetList;
   try
@@ -577,9 +585,9 @@ BRAINSCutDataHandler
 
 scalarType
 BRAINSCutDataHandler
-::GetGaussianSmoothingSigma()
+::GetGaussianSmoothingSigma() const
 {
-  scalarType gaussianSmoothingSigma=
+  const scalarType gaussianSmoothingSigma=
     myConfiguration->Get<ApplyModelType>("ApplyModel")
               ->GetAttribute<FloatValue>("GaussianSmoothingSigma");
   return gaussianSmoothingSigma;
@@ -594,92 +602,90 @@ BRAINSCutDataHandler
 
 unsigned int
 BRAINSCutDataHandler
-::GetEpochIteration()
+::GetEpochIteration() const
 {
-  unsigned int trainEpochIteration = TrainConfiguration->GetAttribute<IntValue>("EpochIterations");
+  const unsigned int trainEpochIteration = TrainConfiguration->GetAttribute<IntValue>("EpochIterations");
   return trainEpochIteration;
 }
 
 float
 BRAINSCutDataHandler
-::GetDesiredError()
+::GetDesiredError() const
 {
-  float trainDesiredError = TrainConfiguration->GetAttribute<FloatValue>("DesiredError");
+  const float trainDesiredError = TrainConfiguration->GetAttribute<FloatValue>("DesiredError");
   return trainDesiredError;
 }
 
 unsigned int
 BRAINSCutDataHandler
-::GetMaximumDataSize()
+::GetMaximumDataSize() const
 {
-  unsigned int trainMaximumDataSize = TrainConfiguration->GetAttribute<IntValue>("MaximumVectorsPerEpoch");
+  const unsigned int trainMaximumDataSize = TrainConfiguration->GetAttribute<IntValue>("MaximumVectorsPerEpoch");
   return trainMaximumDataSize;
 }
 
 int
 BRAINSCutDataHandler
-::GetANNHiddenNodesNumber()
+::GetANNHiddenNodesNumber() const
 {
-  int ANNHiddenNodesNumber = TrainConfiguration->GetAttribute<IntValue>("NumberOfHiddenNodes");
+  const int ANNHiddenNodesNumber = TrainConfiguration->GetAttribute<IntValue>("NumberOfHiddenNodes");
   return ANNHiddenNodesNumber;
 }
 
 float
 BRAINSCutDataHandler
-::GetActivationFunctionSlope()
+::GetActivationFunctionSlope() const
 {
-  float activationSlope = TrainConfiguration->GetAttribute<FloatValue>("ActivationSlope");
+  const float activationSlope = TrainConfiguration->GetAttribute<FloatValue>("ActivationSlope");
   return activationSlope;
-  
 }
 
 float
 BRAINSCutDataHandler
-::GetActivationFunctionMinMax()
+::GetActivationFunctionMinMax() const
 {
-  float activationMinMax = TrainConfiguration->GetAttribute<FloatValue>("ActivationMinMax");
+  const float activationMinMax = TrainConfiguration->GetAttribute<FloatValue>("ActivationMinMax");
   return activationMinMax;
 }
 
 /** Get Random Tree */
-int 
+int
 BRAINSCutDataHandler
-::GetMaxDepth()
+::GetMaxDepth() const
 {
-  int trainMaxDepth= TrainConfiguration->GetAttribute<IntValue>("MaxDepth");
+  const int trainMaxDepth= TrainConfiguration->GetAttribute<IntValue>("MaxDepth");
   return trainMaxDepth;
 }
 
 int
 BRAINSCutDataHandler
-::GetMinSampleCount()
+::GetMinSampleCount() const
 {
-  int trainMinSampleCount= TrainConfiguration->GetAttribute<IntValue>("MinSampleCount");
+  const int trainMinSampleCount= TrainConfiguration->GetAttribute<IntValue>("MinSampleCount");
   return trainMinSampleCount;
 }
 
 bool
 BRAINSCutDataHandler
-::GetUseSurrogates()
+::GetUseSurrogates() const
 {
-  bool trainUseSurrogates= TrainConfiguration->GetAttribute<BooleanValue>("UseSurrogates");
+  const bool trainUseSurrogates= TrainConfiguration->GetAttribute<BooleanValue>("UseSurrogates");
   return trainUseSurrogates;
 }
 
 bool
 BRAINSCutDataHandler
-::GetCalcVarImportance()
+::GetCalcVarImportance() const
 {
-  bool trainCalcVarImportance= TrainConfiguration->GetAttribute<BooleanValue>("CalcVarImportance");
+  const bool trainCalcVarImportance= TrainConfiguration->GetAttribute<BooleanValue>("CalcVarImportance");
   return trainCalcVarImportance;
 }
 
 int
 BRAINSCutDataHandler
-::GetMaxTreeCount()
+::GetMaxTreeCount() const
 {
-  int trainMaxTreeCount= TrainConfiguration->GetAttribute<IntValue>("MaxTreeCount");
+  const int trainMaxTreeCount= TrainConfiguration->GetAttribute<IntValue>("MaxTreeCount");
   return trainMaxTreeCount;
 }
-
 

@@ -7,17 +7,17 @@
  * BRAINSCut Primary Class Starts here
  */
 
-class BRAINSCutDataHandler 
+class BRAINSCutDataHandler
 {
 public:
   BRAINSCutDataHandler(){};
-  BRAINSCutDataHandler(std::string modelConfigurationFilenameFilename);
+  BRAINSCutDataHandler(const std::string modelConfigurationFilenameFilename);
 
   void                     SetNetConfiguration();
-  BRAINSCutConfiguration * GetNetConfiguration();
+  BRAINSCutConfiguration * GetNetConfiguration()const ;
 
   void        SetNetConfigurationFilename(const std::string filename);
-  std::string GetNetConfigurationFilename();
+  std::string GetNetConfigurationFilename() const;
 
   void SetAtlasDataSet();
   void SetAtlasImage();
@@ -25,74 +25,76 @@ public:
   void SetRegionsOfInterest();
 
   void         SetRegistrationParameters();
-  std::string  GetRegistrationID();
+  std::string  GetRegistrationID() const;
   void         SetRegistrationImageTypeToUse( std::string type );
-  std::string  GetRegistrationImageTypeToUse( );
+  std::string  GetRegistrationImageTypeToUse( ) const;
 
   void         SetRhoPhiTheta();
 
   void         SetGradientSize();
-  unsigned int GetGradientSize();
+  unsigned int GetGradientSize() const;
 
   void SetTrainingVectorConfiguration();
 
-  std::string GetModelBaseName();
+  std::string GetModelBaseName() const;
 
   void        SetANNModelFilenameAtIteration( const int iteration);
+#if 0
+  std::string GetANNModelFilenameAtIteration( const int iteration) const;
+#endif
   void        SetANNTestingSSEFilename();
-  std::string GetANNTestingSSEFilename();
-  std::string GetANNModelFilenameAtIteration( const int iteration);
-  std::string GetANNModelFilename( );
+  std::string GetANNTestingSSEFilename() const;
+  std::string GetANNModelFilename( ) const;
 
   void        SetRandomForestModelFilename( int depth, int nTree );
   void        SetRandomForestModelFilename( std::string name );
-  std::string GetRandomForestModelFilename();
-  std::string GetRFModelFilename( int depth,int NTrees);
+  std::string GetRandomForestModelFilename() const;
+  std::string GetRFModelFilename( const int depth,const int NTrees) const;
 
-  DataSet::StringVectorType GetROIIDsInOrder();
+  DataSet::StringVectorType GetROIIDsInOrder() const;
 
   void        SetTrainVectorFilename();
-  std::string GetTrainVectorFilename();
+  std::string GetTrainVectorFilename() const;
 
-  void                  GetDeformedSpatialLocationImages( 
+  void                  GetDeformedSpatialLocationImages(
                                          std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
-                                         DataSet& subject );
-  void                  GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject);
-  void                  GetDeformedROIs( std::map<std::string, 
-                                         WorkingImagePointer>& deformedROIs, DataSet& subject );
-  bool                  GetNormalization();
+                                         DataSet& subject ) const;
+  void                  GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject) const;
+  void                  GetDeformedROIs( std::map<std::string,
+                                         WorkingImagePointer>& deformedROIs, DataSet& subject ) const;
+  bool                  GetNormalization() const;
   void                  SetNormalization();
 
-  std::string           GetAtlasFilename();
-  std::string           GetAtlasBinaryFilename();
-  int                   GetROIAutoDilateSize();
-  unsigned int          GetROICount();
-  WorkingImagePointer   GetAtlasImage();
-  ProbabilityMapList *  GetROIDataList();
-  DataSet *      GetAtlasDataSet();
+  std::string           GetAtlasFilename() const;
+  std::string           GetAtlasBinaryFilename() const;
+  int                   GetROIAutoDilateSize() const;
+  unsigned int          GetROICount() const;
+  WorkingImagePointer   GetAtlasImage() const;
+  ProbabilityMapList *  GetROIDataList() const;
+  DataSet *      GetAtlasDataSet() const;
 
-  BRAINSCutConfiguration::ApplyDataSetListType GetApplyDataSet();
-  BRAINSCutConfiguration::TrainDataSetListType GetTrainDataSet();
+  BRAINSCutConfiguration::ApplyDataSetListType GetApplyDataSet() const;
+  BRAINSCutConfiguration::TrainDataSetListType GetTrainDataSet() const;
 
-  int                   GetTrainIteration();
-  scalarType            GetANNOutputThreshold();
-  scalarType            GetGaussianSmoothingSigma();
+  int                   GetTrainIteration() const;
+  scalarType            GetANNOutputThreshold() const;
+  scalarType            GetGaussianSmoothingSigma() const;
 
-  std::string           GetSubjectToAtlasRegistrationFilename( DataSet& subject);
-  std::string           GetAtlasToSubjectRegistrationFilename( DataSet& subject);
+  std::string           GetSubjectToAtlasRegistrationFilename( DataSet& subject) const;
+  std::string           GetAtlasToSubjectRegistrationFilename( DataSet& subject) const;
 
   void         SetTrainConfiguration( std::string trainParamterName );
-  unsigned int GetEpochIteration();
-  float        GetDesiredError();
-  unsigned int GetMaximumDataSize();
-  int          GetANNHiddenNodesNumber();
-  float        GetActivationFunctionSlope();
-  float        GetActivationFunctionMinMax();
-  int          GetMaxDepth();
-  int          GetMinSampleCount();
-  bool         GetUseSurrogates();
-  bool         GetCalcVarImportance();
-  int          GetMaxTreeCount();
+  unsigned int GetEpochIteration() const;
+  float        GetDesiredError() const;
+  unsigned int GetMaximumDataSize() const;
+  int          GetANNHiddenNodesNumber() const;
+  float        GetActivationFunctionSlope() const;
+  float        GetActivationFunctionMinMax() const;
+  int          GetMaxDepth() const;
+  int          GetMinSampleCount() const;
+  bool         GetUseSurrogates() const;
+  bool         GetCalcVarImportance() const;
+  int          GetMaxTreeCount() const;
 
 
 protected:
@@ -108,8 +110,8 @@ protected:
   WorkingImagePointer atlasImage;
 
   /**ProbabilityMaps*/
-  ProbabilityMapList *             roiDataList;
-  DataSet::StringVectorType roiIDsInOrder;;
+  ProbabilityMapList *             m_roiDataList;
+  DataSet::StringVectorType        m_roiIDsInOrder;;
   unsigned int                     roiCount;
 
   /** registration data set */
@@ -119,26 +121,26 @@ protected:
   int                               roiAutoDilateSize;
 
   /** Spatial Coordinate System Images*/
-  WorkingImagePointer rho;
-  WorkingImagePointer phi;
-  WorkingImagePointer theta;
+  WorkingImagePointer m_rho;
+  WorkingImagePointer m_phi;
+  WorkingImagePointer m_theta;
 
-  unsigned int gradientSize;
+  unsigned int m_gradientSize;
 
   /** vector file name */
   std::string trainVectorFilename;
   bool        normalization;
 
   /** model name **/
-  std::string ANNModelFilename;
-  std::string RandomForestModelFilename;
+  std::string m_ANNModelFilename;
+  std::string m_RandomForestModelFilename;
   std::string ANNTestingSSEFilename;
 
 private:
   std::string              myConfigurationFilename;
   BRAINSCutConfiguration * myConfiguration;
 
-  WorkingImageType GetDeformedImage( WorkingImageType image);
+  WorkingImageType GetDeformedImage( WorkingImageType image) const;
 
 
 };
