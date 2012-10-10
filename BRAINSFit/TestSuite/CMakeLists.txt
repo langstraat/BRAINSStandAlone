@@ -39,7 +39,7 @@ ExternalData_add_test( ${PROJECT_NAME}FetchData NAME ${BRAINSFitTestName}
   --numberOfIterations 2500
   --numberOfHistogramBins 200
   --numberOfSamples 131072
-  --translationScale 205
+  --translationScale 250
   --minimumStepLength 0.001
   --outputVolumePixelType uchar
   --transformType Affine
@@ -1183,29 +1183,14 @@ if(RUN_SYN_TESTS)
   #+   Metric MMI
   #--     Mask         X  BRAINSFitTest_SyNRotationMasks
   #--     No mask      X  BRAINSFitTest_SyNRotationNoMasks
-  #+   Metric NC
-  #--     Mask         X  BRAINSFitTest_NCSyNRotationMasks
-  #--     No mask      X  BRAINSFitTest_NCSyNRotationNoMasks
-  #+   Metric MSE
-  #--     Mask         X  BRAINSFitTest_MSESyNRotationMasks
-  #--     No mask      X  BRAINSFitTest_MSESyNRotationNoMasks
-  #+   Metric KS
-  #--     Mask         P
-  #--     No mask      P
   # Test with scaling
   #+   Metric MMI
   #--     Mask         X  BRAINSFitTest_SyNScaleMasks
   #--     No mask      X  BRAINSFitTest_SyNScaleNoMasks
-  #+   Metric NC
-  #--     Mask         X  BRAINSFitTest_NCSyNScaleMasks
-  #--     No mask      X  BRAINSFitTest_NCSyNScaleNoMasks
-  #+   Metric MSE
-  #--     Mask         X  BRAINSFitTest_MSESyNScaleMasks
-  #--     No mask      X  BRAINSFitTest_MSESyNScaleNoMasks
-  #+   Metric KS
-  #--     Mask         P
-  #--     No mask      P
-  # Test with skew     P
+  # Test with skew
+  #+   Metric MMI
+  #--     Mask         X  BRAINSFitTest_SyNScaleSkewVersorMasks
+  #--     No mask      X  BRAINSFitTest_SyNScaleSkewVersorNoMasks
   set(BRAINSFitTestName BRAINSFitTest_SyNRotationMasks)
   ExternalData_add_test( ${PROJECT_NAME}FetchData NAME ${BRAINSFitTestName}
     COMMAND ${LAUNCH_EXE} $<TARGET_FILE:BRAINSFitTestDriver>
