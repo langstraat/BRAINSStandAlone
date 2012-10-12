@@ -133,11 +133,18 @@ int main(int argc, char *argv[])
     }
   else if( useTransform )
     {
-    genericTransform = itk::ReadTransformFromDisk(warpTransform);
-    if(inverseTransform)
+    try
+      {
+      genericTransform = itk::ReadTransformFromDisk( std::string warpTransform );
+      }
+    catch (itk::ExceptionObject & excp )
+      {
+      std::cout << "******* HERE *******" << std::endl;
+      }
+    if( inverseTransform )
       {
       std::string transformFileType = genericTransform->GetNameOfClass();
-      std::cout<<"Transform File Type:: "<<transformFileType<<std::endl;
+      std::cout<<"Transform File Type:: "<< transformFileType << std::endl;
       if( transformFileType == "AffineTransform" )
         {
         typedef itk::AffineTransform< double,3>
@@ -188,6 +195,7 @@ int main(int argc, char *argv[])
         }
       }
     }
+  std::cout << "******* NOT HERE *******" << std::endl;
   TBRAINSResampleInternalImageType::Pointer TransformedImage =
     GenericTransformImage<TBRAINSResampleInternalImageType, TBRAINSResampleInternalImageType, DisplacementFieldType>(
       PrincipalOperandImage,

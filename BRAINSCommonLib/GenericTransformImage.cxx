@@ -28,9 +28,6 @@
 #include "itkTransformFactory.h"
 #include <itksys/SystemTools.hxx>
 
-#if (ITK_VERSION_MAJOR > 3)
-#include "itkCompositeTransform.h"
-#endif
 // #include "itkSimilarity2DTransfor3DPerspectiveTransform.h"
 
 namespace itk
@@ -339,15 +336,9 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
       CompositeTransformType::Pointer tempCopy = CompositeTransformType::New();
       const CompositeTransformType::TransformQueueType &transformQueue =
         tempInitializerITKTransform->GetTransformQueue();
-      tempCopy->SetFixedParameters( tempInitializerITKTransform->GetFixedParameters() );
-      tempCopy->SetParameters( tempInitializerITKTransform->GetParameters() );
       for(unsigned i = 0; i < transformQueue.size(); ++i)
         {
-        tempCopy->AddTransform( tempInitializerITKTransform->GetNthTransform(i) );
-        tempCopy->SetNthTransformToOptimize(i, tempInitializerITKTransform->GetNthTransformToOptimize(i) );
         }
-      tempCopy->FlattenTransformQueue();
-      genericTransform = tempCopy.GetPointer();
       }
 #endif
     }

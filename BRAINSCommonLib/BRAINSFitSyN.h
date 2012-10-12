@@ -16,7 +16,7 @@ simpleSynReg( typename FixedImageType::Pointer & fixedImage,
 {
     typename RegistrationHelperType::Pointer regHelper = RegistrationHelperType::New();
 
-    std::string whichMetric = "mattes";
+    std::string whichMetric = "cc";
     typename RegistrationHelperType::MetricEnumeration curMetric = regHelper->StringToMetricType(whichMetric);
     float lowerQuantile = 0.0;
     float upperQuantile = 1.0;
@@ -37,7 +37,9 @@ simpleSynReg( typename FixedImageType::Pointer & fixedImage,
 
     //--convergence [150x100x70,1e-6,10]
     std::vector<unsigned int> iterations(3);
-    iterations[0]=150; iterations[1]=100; iterations[2]=75;
+    iterations[0]=50;
+    iterations[1]=35;
+    iterations[2]=15;
     double        convergenceThreshold = 1e-6;
     unsigned int  convergenceWindowSize = 10; // ?
     ants::antscout << "  number of levels = 3 " << std::endl;
@@ -47,18 +49,24 @@ simpleSynReg( typename FixedImageType::Pointer & fixedImage,
 
     //--shrink-factors 3x2x1
     std::vector<unsigned int> factors(3);
-    factors[0]=3; factors[1]=2; factors[2]=1;
+    factors[0]=3;
+    factors[1]=2;
+    factors[2]=1;
     shrinkFactorsList.push_back(factors);
 
     //--smoothing-sigmas 3x2x0
     std::vector<float> sigmas(3);
-    sigmas[0]=3; sigmas[1]=2; sigmas[2]=0;
+    sigmas[0]=3;
+    sigmas[1]=2;
+    sigmas[2]=0;
     smoothingSigmasList.push_back(sigmas);
 
-    float samplingPercentage = 1.0;
-    typename RegistrationHelperType::SamplingStrategy samplingStrategy = RegistrationHelperType::regular; //Regular
-    unsigned int binOption = 32; //bins
-    regHelper->AddMetric(curMetric, fixedImage, movingImage, 1.0, samplingStrategy, binOption, 1, samplingPercentage);
+    double samplingPercentage = 1.0;
+    typename RegistrationHelperType::SamplingStrategy samplingStrategy = RegistrationHelperType::none; //none
+    unsigned int bins = 32; //bins
+    double weighting = 1.0;
+    unsigned int radius = 5;
+    regHelper->AddMetric(curMetric, fixedImage, movingImage, weighting, samplingStrategy, bins, radius, samplingPercentage);
 
     //--transform "SyN[0.25,3.0,0.0]"
     float learningRate = 0.25;
