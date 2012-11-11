@@ -111,6 +111,11 @@ public:
     return m_AtlasToSubjectTransform;
   }
 
+  GenericTransformType::Pointer GetSubjectToAtlasTransform()
+  {
+    return m_SubjectToAtlasTransform;
+  }
+
   std::vector<GenericTransformType::Pointer> GetIntraSubjectTransforms()
   {
     return m_IntraSubjectTransforms;
@@ -190,10 +195,12 @@ private:
   std::vector<unsigned int> m_WarpGrid;
   std::vector<std::string>  m_IntraSubjectTransformFileNames;
   std::string               m_AtlasToSubjectTransformFileName;
+  std::string               m_SubjectToAtlasTransformFileName;
 
   std::vector<std::string> m_InputVolumeTypes;
 
   GenericTransformType::Pointer              m_AtlasToSubjectTransform;
+  GenericTransformType::Pointer              m_SubjectToAtlasTransform;
   GenericTransformType::Pointer              m_AtlasToSubjectInitialTransform;
   std::vector<GenericTransformType::Pointer> m_IntraSubjectTransforms;
 

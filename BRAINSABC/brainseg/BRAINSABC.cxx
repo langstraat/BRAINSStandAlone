@@ -1557,6 +1557,16 @@ int main(int argc, char * *argv)
         // filename exists, it will just read it in and use it directly
         // without doing all the iterations.
         }
+      if(subjectToAtlasTransform != "")
+        {
+        const std::string postSegmentationTransformFileName=subjectToAtlasTransform;
+        muLogMacro(<< "Writing final subject to altas template... " << postSegmentationTransformFileName << std::endl );
+        GenericTransformType::Pointer subjectToAtlasPostSegmentationTransform = segfilter->GetSubjectToAtlasTemplateGenericTransform();
+        WriteTransformToDisk(subjectToAtlasPostSegmentationTransform, postSegmentationTransformFileName);
+        // TODO:  Need to write a short circuit so that if this final transform
+        // filename exists, it will just read it in and use it directly
+        // without doing all the iterations.
+        }
       }
 
     // Write the labels

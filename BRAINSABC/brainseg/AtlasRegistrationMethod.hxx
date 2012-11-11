@@ -73,6 +73,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
 {
   m_AtlasOriginalImageList = NewAtlasList;
   m_AtlasToSubjectTransform = MakeRigidIdentity();
+  m_SubjectToAtlasTransform = MakeRigidIdentity();
   m_DoneRegistration = false;
   m_RegistrationUpdateNeeded = true;
 }
@@ -92,6 +93,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
 
   m_IntraSubjectOriginalImageList = NewIntraSubjectOriginalImageList;
   m_AtlasToSubjectTransform = MakeRigidIdentity();
+  m_SubjectToAtlasTransform = MakeRigidIdentity();
   // Clear previous transforms
   m_IntraSubjectTransforms.clear();
   m_IntraSubjectTransforms.resize(numIntraSubjectOriginalImages);
@@ -360,9 +362,8 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
   // TODO:  Need to make this register all the atlas filenames to all the
   //       reference images.  Should probably do it in reverse order.
   muLogMacro(<< "Register atlas to subject images" << std::endl);
-  if( itksys::SystemTools::FileExists( this->m_AtlasToSubjectTransformFileName.c_str() ) ) // Shortcut if the
-                                                                                           // registration has been done
-                                                                                           // previously.
+  // Shortcut if the registration has been done previously.
+  if( itksys::SystemTools::FileExists( this->m_AtlasToSubjectTransformFileName.c_str() ) )
     {
     try
       {
@@ -599,6 +600,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
         const unsigned int actualIterations = atlasToSubjectRegistrationHelper->GetActualNumberOfIterations();
         muLogMacro( << "Registration tool " << actualIterations << " iterations." << std::endl );
         m_AtlasToSubjectTransform = atlasToSubjectRegistrationHelper->GetCurrentGenericTransform();
+        m_SubjectToAtlasTransform = atlasToSubjectRegistrationHelper->GetCurrentSubjectToAtlasGenericTransform();
         if( this->m_DebugLevel > 9 )
           {
           muLogMacro( << "POST_ASSIGNMENT" <<  atlasReferenceImageIndex << "  " );
@@ -703,6 +705,11 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
       {
       muLogMacro(<< "Writing " << this->m_AtlasToSubjectTransformFileName << "." << std::endl);
       WriteTransformToDisk(m_AtlasToSubjectTransform, this->m_AtlasToSubjectTransformFileName);
+      }
+      if ( this->m_SubjectToAtlasTransformFileName != "" )
+      {
+      muLogMacro(<< "Writing " << this->m_SubjectToAtlasTransformFileName << "." << std::endl);
+      WriteTransformToDisk(m_SubjectToAtlasTransform, this->m_SubjectToAtlasTransformFileName);
       }
     }
 }

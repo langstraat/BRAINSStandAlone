@@ -59,18 +59,25 @@
     <default>SyN</default>
   </string-enumeration>
   <transform fileExtensions=".h5,.hdf5,.mat,.txt">
+    <name>subjectToAtlasTransform</name>
+    <label>Subject To Atlas Transform</label>
+    <description>The trasform from subject back to Atlas space (inverse of atlasToSubjectTransform)</description>
+    <longflag>subjectToAtlasTransform</longflag>
+    <channel>output</channel>
+  </transform>
+  <transform fileExtensions=".h5,.hdf5,.mat,.txt">
     <name>atlasToSubjectTransform</name>
     <label>Atlas to Subject Transform</label>
     <description>The trasform from atlas to the subject</description>
     <longflag>atlasToSubjectTransform</longflag>
     <channel>output</channel>
   </transform>
-  <transform fileExtensions=".h5">
+  <transform fileExtensions=".h5,.hdf5,.mat,.txt">
     <name>atlasToSubjectInitialTransform</name>
     <label>Atlas to Subject Initial Transform</label>
-    <description>The initial trasform from atlas to the subject</description>
+    <description>The initial trasform from atlas to the subject, used to initialize the transform that will be updated</description>
     <longflag>atlasToSubjectInitialTransform</longflag>
-    <channel>output</channel>
+    <channel>input</channel>
   </transform>
   <string-enumeration>
     <name>subjectIntermodeTransformType</name>
