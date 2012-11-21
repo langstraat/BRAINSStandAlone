@@ -142,8 +142,10 @@ public:
   itkGetConstMacro(InitializeTransformMode, std::string);
   itkSetMacro(MaskInferiorCutOffFromCenter, double);
   itkGetConstMacro(MaskInferiorCutOffFromCenter, double);
-  itkSetMacro(CurrentGenericTransform,  GenericTransformType::Pointer);
-  itkGetConstMacro(CurrentGenericTransform,  GenericTransformType::Pointer);
+  itkSetMacro(CurrentGenericTransform,              GenericTransformType::Pointer);
+  itkGetConstMacro(CurrentGenericTransform,         GenericTransformType::Pointer);
+  itkSetMacro(CurrentInverseGenericTransform,       GenericTransformType::Pointer);
+  itkGetConstMacro(CurrentInverseGenericTransform,  GenericTransformType::Pointer);
   VECTORitkSetMacro(SplineGridSize, std::vector<int>       );
 
   itkGetConstMacro(ActualNumberOfIterations,      unsigned int);
@@ -256,6 +258,7 @@ private:
   // unsigned int             m_AccumulatedNumberOfIterationsForAllLevels;
   unsigned int                               m_DebugLevel;
   GenericTransformType::Pointer              m_CurrentGenericTransform;
+  GenericTransformType::Pointer              m_CurrentInverseGenericTransform;
   std::vector<GenericTransformType::Pointer> m_GenericTransformList;
   bool                                       m_DisplayDeformedImage;
   bool                                       m_PromptUserAfterDisplay;
@@ -372,6 +375,7 @@ BRAINSFitHelper::SetupRegistration()
   myHelper->SetUseExplicitPDFDerivativesMode(this->m_UseExplicitPDFDerivativesMode);
   myHelper->SetMaskInferiorCutOffFromCenter(this->m_MaskInferiorCutOffFromCenter);
   myHelper->SetCurrentGenericTransform(this->m_CurrentGenericTransform);
+  myHelper->SetCurrentInverseGenericTransform(this->m_CurrentInverseGenericTransform);
   myHelper->SetSplineGridSize(this->m_SplineGridSize);
   myHelper->SetCostFunctionConvergenceFactor(this->m_CostFunctionConvergenceFactor);
   myHelper->SetProjectedGradientTolerance(this->m_ProjectedGradientTolerance);
@@ -404,6 +408,7 @@ BRAINSFitHelper::RunRegistration()
     }
   myHelper->Update();
   this->m_CurrentGenericTransform = myHelper->GetCurrentGenericTransform();
+  this->m_CurrentInverseGenericTransform = myHelper->GetCurrentInverseGenericTransform();
   this->m_ActualNumberOfIterations = myHelper->GetActualNumberOfIterations();
   this->m_PermittedNumberOfIterations = myHelper->GetPermittedNumberOfIterations();
   this->m_GenericTransformList.resize(myHelper->GetGenericTransformListPtr()->size() );

@@ -1689,7 +1689,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
       bulkAffineTransform->SetIdentity();
 
       CompositeTransformType::Pointer initialSyNTransform = CompositeTransformType::New();
-      CompositeTransformType::Pointer outputSyNTransform = CompositeTransformType::New();
+      CompositeTransformType::Pointer outputSyNForwardTransform = CompositeTransformType::New();
+      CompositeTransformType::Pointer outputSyNReverseTransform = CompositeTransformType::New();
 
       if( m_CurrentGenericTransform.IsNotNull() )
         {
@@ -1785,13 +1786,11 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
         }
       else
         {
-        outputSyNTransform =
-            simpleSynReg<FixedImageType, MovingImageType>( m_FixedVolume,
-                                                           m_MovingVolume,
-                                                           initialSyNTransform );
+        outputSyNForwardTransform = simpleSynReg<FixedImageType, MovingImageType>( m_FixedVolume, m_MovingVolume, initialSyNTransform );
+        outputSyNReverseTransform = simpleSynReg<FixedImageType, MovingImageType>( m_FixedVolume, m_MovingVolume, initialSyNTransform );
         }
 
-      if( outputSyNTransform.IsNull() )
+      if( outputSyNForwardTransform.IsNull() || outputSyNReverseTransform.IsNull() )
         {
           std::cout << "\n*******Error: the SyN registration has failed.********\n" << std::endl;
         }
@@ -1799,7 +1798,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
         {
           // CompositeTransformType has derived from itk::Transform, so we can directly assigne that to the
           // m_CurrentGenericTransform that is a GenericTransformType.
-          m_CurrentGenericTransform = outputSyNTransform;
+          m_CurrentGenericTransform[0] = outputSyNForwardTransform;
+          m_CurrentGenericTransform[1] = outputSyNReverseTransform;
           // Now turn of the initiallize code to off
           localInitializeTransformMode = "Off";
         }

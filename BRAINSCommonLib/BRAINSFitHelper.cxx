@@ -81,6 +81,7 @@ BRAINSFitHelper::BRAINSFitHelper() :
   // m_AccumulatedNumberOfIterationsForAllLevels(0),
   m_DebugLevel(0),
   m_CurrentGenericTransform(NULL),
+  m_CurrentInverseGenericTransform(NULL),
   m_GenericTransformList(0),
   m_DisplayDeformedImage(false),
   m_PromptUserAfterDisplay(false),
@@ -222,7 +223,7 @@ BRAINSFitHelper::Update(void)
     localCostMetric->SetNumberOfHistogramBins(this->m_NumberOfHistogramBins);
     const bool UseCachingOfBSplineWeights = ( m_UseCachingOfBSplineWeightsMode == "ON" ) ? true : false;
     localCostMetric->SetUseCachingOfBSplineWeights(UseCachingOfBSplineWeights);
-        
+
     this->RunRegistration<MetricType>();
     }
   else if( this->m_CostMetric == "MSE" )
@@ -406,6 +407,14 @@ BRAINSFitHelper::PrintSelf(std::ostream & os, Indent indent) const
     {
     os << indent << "CurrentGenericTransform: IS NULL" << std::endl;
     }
+  if( m_CurrentInverseGenericTransform.IsNotNull() )
+    {
+    os << indent << "CurrentInverseGenericTransform:\n" << this->m_CurrentInverseGenericTransform << std::endl;
+    }
+  else
+    {
+    os << indent << "CurrentInverseGenericTransform: IS NULL" << std::endl;
+    }
   os << indent << "CostMetric:       " << this->m_CostMetric << std::endl;
 }
 
@@ -579,6 +588,22 @@ BRAINSFitHelper::PrintCommandLine(const bool dumpTempVolumes, const std::string 
     }
     {
     const std::string outputTransform("DEBUGOutputTransform" + suffix + ".h5");
+    oss << "--outputTransform " << outputTransform  << "  \\" << std::endl;
+    std::cout << oss.str() << std::endl;
+    }
+  if( m_CurrentInverseGenericTransform.IsNotNull() )
+    {
+    const std::string initialTransformString("DEBUGInitialTransform_" + suffix + ".h5");
+    WriteBothTransformsToDisk(this->m_CurrentInverseGenericTransform.GetPointer(), initialTransformString, "");
+    oss << "--initialTransform " << initialTransformString  << "  \\" << std::endl;
+    }
+    {
+    const std::string outputVolume("DEBUGOutputVolume_" + suffix + ".nii.gz");
+    oss << "--outputVolume " << outputVolume  << "  \\" << std::endl;
+    std::cout << oss.str() << std::endl;
+    }
+    {
+    const std::string outputTransform("DEBUGOutputInverseTransform" + suffix + ".h5");
     oss << "--outputTransform " << outputTransform  << "  \\" << std::endl;
     std::cout << oss.str() << std::endl;
     }
