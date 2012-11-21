@@ -686,18 +686,10 @@ int main(int argc, char *argv[])
     // write out transform actually computed, so skip the initial transform
     CompositeTransformType::TransformTypePointer tempSyNFinalTransform =
       tempSyNCompositeTransform.GetPointer();
-//tempSyNCompositeTransform->GetNthTransform( 1 );
-        
-    if( tempSyNFinalTransform.IsNull() )
-      {
-      std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
-      return EXIT_FAILURE;
-      }
-    else
-      {
-      itk::ants::WriteTransform<3>( tempSyNFinalTransform, localOutputTransform );
-      std::cout << "SyN warped transform is written to the disk." << std::endl;
-      }
+    // tempSyNCompositeTransform->GetNthTransform( 1 );
+    assert( ! tempSyNFinalTransform.IsNull() );
+    itk::ants::WriteTransform<3>( tempSyNFinalTransform, localOutputTransform );
+    std::cout << "SyN warped transform is written to the disk." << std::endl;
     }
   else
 #endif
@@ -706,7 +698,6 @@ int main(int argc, char *argv[])
   itk::WriteBothTransformsToDisk(currentGenericTransform.GetPointer(),
                                  localOutputTransform, strippedOutputTransform);
     }
-
   return 0;
 }
 

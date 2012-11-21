@@ -115,9 +115,8 @@ simpleSynReg( typename FixedImageType::Pointer & fixedImage,
     }
   // Get the output transform
   typename CompositeTransformType::Pointer outputCompositeTransform = regHelper->GetCompositeTransform();
-  typename CompositeTransformType::Pointer outputInverseCompositeTransform = regHelper->GetInverseCompositeTransform();
   // return composite result Transform;
-  return [outputForwardCompositeTransform, outputReverseCompositeTransform];
+  return outputCompositeTransform;
 }
 
 #endif

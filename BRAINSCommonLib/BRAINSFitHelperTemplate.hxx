@@ -1546,66 +1546,18 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
               }
-
-            initialBSplineTransform->SetBulkTransform(
-              tempInitializerITKTransform->GetBulkTransform() );
-            BSplineTransformType::ParametersType tempFixedInitialParameters =
-              tempInitializerITKTransform->GetFixedParameters();
-            BSplineTransformType::ParametersType initialFixedParameters =
-              initialBSplineTransform->GetFixedParameters();
-
-            bool checkMatch = true;         // Assume true;
-            if( initialFixedParameters.GetSize() != tempFixedInitialParameters.GetSize() )
+            initialBSplineTransform->SetBulkTransform( tempInitializerITKTransform->GetBulkTransform() );
+            BSplineTransformType::ParametersType tempFixedInitialParameters = tempInitializerITKTransform->GetFixedParameters();
+            BSplineTransformType::ParametersType initialFixedParameters = initialBSplineTransform->GetFixedParameters();
+            assert( initialFixedParameters.GetSize() == tempFixedInitialParameters.GetSize() );
+            for( unsigned int i = 0; i < initialFixedParameters.GetSize(); ++i )
               {
-              checkMatch = false;
-              std::cerr << "ERROR INITILIZATION FIXED PARAMETERS DO NOT MATCH: " << initialFixedParameters.GetSize()
-                        << " != " << tempFixedInitialParameters.GetSize() << std::endl;
+              assert( initialFixedParameters.GetElement(i) == tempFixedInitialParameters.GetElement(i) );
               }
-            if( checkMatch )             //  This ramus covers the hypothesis
-                                         // that
-            // the
-            // FixedParameters represent the grid locations of the spline nodes.
-              {
-              for( unsigned int i = 0; i < initialFixedParameters.GetSize(); ++i )
-                {
-                if( initialFixedParameters.GetElement(i) != tempFixedInitialParameters.GetElement(i) )
-                  {
-                  checkMatch = false;
-                  std::cerr << "ERROR FIXED PARAMETERS DO NOT MATCH: " << initialFixedParameters.GetElement(i)
-                            << " != " << tempFixedInitialParameters.GetElement(i) << std::endl;
-                  }
-                }
-              }
-            if( checkMatch )
-              {
-              BSplineTransformType::ParametersType tempInitialParameters =
-                tempInitializerITKTransform->GetParameters();
-              if( initialBSplineTransform->GetNumberOfParameters() ==
-                  tempInitialParameters.Size() )
-                {
-                initialBSplineTransform->SetFixedParameters(
-                  tempFixedInitialParameters);
-                initialBSplineTransform->SetParametersByValue(tempInitialParameters);
-                }
-              else
-                {
-                // Error, initializing from wrong size transform parameters;
-                //  Use its bulk transform only?
-                itkGenericExceptionMacro(
-                  << "Trouble using the m_CurrentGenericTransform for initializing a BSPlineDeformableTransform:"
-                  << std::endl
-                  << "The initializing BSplineDeformableTransform has a different"
-                  << " number of Parameters, than what is required for the requested grid."
-                  << std::endl
-                  << "BRAINSFit was only able to use the bulk transform that was before it.");
-                }
-              }
-            else
-              {
-              itkGenericExceptionMacro(
-                << "ERROR:  initialization BSpline transform does not have the same "
-                << "parameter dimensions as the one currently specified.")
-              }
+            BSplineTransformType::ParametersType tempInitialParameters = tempInitializerITKTransform->GetParameters();
+            assert( initialBSplineTransform->GetNumberOfParameters() == tempInitialParameters.Size() );
+            initialBSplineTransform->SetFixedParameters( tempFixedInitialParameters );
+            initialBSplineTransform->SetParametersByValue( tempInitialParameters );
             }
           else
             {
@@ -1616,11 +1568,9 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
         catch( itk::ExceptionObject & excp )
           {
           std::cout << "[FAILED]" << std::endl;
-          std::cerr
-          << "Error while reading the m_CurrentGenericTransform"
-          << std::endl;
+          std::cerr << "Error while reading the m_CurrentGenericTransform" << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+          throw excp;
           }
         }
 
@@ -1689,8 +1639,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
       bulkAffineTransform->SetIdentity();
 
       CompositeTransformType::Pointer initialSyNTransform = CompositeTransformType::New();
-      CompositeTransformType::Pointer outputSyNForwardTransform = CompositeTransformType::New();
-      CompositeTransformType::Pointer outputSyNReverseTransform = CompositeTransformType::New();
+      CompositeTransformType::Pointer outputSyNTransform = CompositeTransformType::New();
 
       if( m_CurrentGenericTransform.IsNotNull() )
         {
@@ -1770,7 +1719,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           {
               std::cout << "[FAILED]" << std::endl;
               std::cerr
-              << "Error while reading the m_CurrentGenericTransform"
+              << "ERROR: Cannot read the m_CurrentGenericTransform:"
               << std::endl;
               std::cerr << excp << std::endl;
 	      throw excp;
@@ -1779,49 +1728,52 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
 
       if( initialSyNTransform.IsNull() )
         {
-        std::cout << "\n**********" << std::endl;
-        std::cout << "ERORR: Udefined intial transform for SyN registration:" << std::endl;
-        std::cout << "SyN registration process cannot be done!" << std::endl;
-        std::cout << "************" << std::endl;
+        std::cout << "[FAILED]" << std::endl;
+        std::cerr << "ERROR: Undefined initial transform for SyN registration" << std::endl;
+        // std::cerr << "SyN registration process cannot be done!" << std::endl;
+
         }
       else
         {
-        outputSyNForwardTransform = simpleSynReg<FixedImageType, MovingImageType>( m_FixedVolume, m_MovingVolume, initialSyNTransform );
-        outputSyNReverseTransform = simpleSynReg<FixedImageType, MovingImageType>( m_FixedVolume, m_MovingVolume, initialSyNTransform );
+        outputSyNTransform = simpleSynReg<FixedImageType, MovingImageType>( m_FixedVolume, m_MovingVolume, initialSyNTransform );
         }
 
-      if( outputSyNForwardTransform.IsNull() || outputSyNReverseTransform.IsNull() )
+      if( outputSyNTransform.IsNull() )
         {
-          std::cout << "\n*******Error: the SyN registration has failed.********\n" << std::endl;
+        // Do not raise exception here
+        std::cout << "[FAILED]" << std::endl;
+        std::cerr << "Error: SyN does not have output transform!"
+                  << std::endl;
+        }
+      else if ( outputSyNTransform->GetInverseTransform().IsNull() )
+        {
+        // Do not raise exception here
+        std::cout << "[FAILED]" << std::endl;
+        std::cerr << "Error: SyN does not have inverse output transform!"
+                  << std::endl;
         }
       else
         {
           // CompositeTransformType has derived from itk::Transform, so we can directly assigne that to the
           // m_CurrentGenericTransform that is a GenericTransformType.
-          m_CurrentGenericTransform[0] = outputSyNForwardTransform;
-          m_CurrentGenericTransform[1] = outputSyNReverseTransform;
+          m_CurrentGenericTransform = outputSyNTransform;
+          // m_CurrentGenericTransform[1] = outputSyNInverseTransform;
           // Now turn of the initiallize code to off
           localInitializeTransformMode = "Off";
         }
 #else
-          std::cout << "******* Error: BRAINSFit cannot do the SyN registration ***"
-                    << "\n******* To use SyN option, you should also build ANTS ***" << std::endl;
-          itkGenericExceptionMacro( << "******* Error: To use SyN registration, build ANTS too." << std::endl );
+          itkGenericExceptionMacro( << "ERROR: BRAINSFit cannot do SyN registration"
+                                    << "\n SyN requires ANTS!" << std::endl );
 #endif
       }
     else
       {
-      itkGenericExceptionMacro(
-        << "Error choosing what kind of transform to fit \""
-        << currentTransformType << "(" << currentTransformIndex + 1 << " of " << m_TransformType.size() << "). ");
+      itkGenericExceptionMacro( << "ERROR: choosing what kind of transform to fit \""
+                                << currentTransformType << "("
+                                << currentTransformIndex + 1 << " of "
+                                << m_TransformType.size() << "). " );
       }
-
-    if( currentTransformId > m_GenericTransformList.size() - 1 )
-      {
-      itkGenericExceptionMacro(
-        << "Out of bounds access for transform vector!" << std::endl);
-      }
-
+    assert( currentTransformId > m_GenericTransformList.size() - 1 );
     m_GenericTransformList[currentTransformId] = m_CurrentGenericTransform;
     currentTransformId++;
     }

@@ -591,12 +591,6 @@ BRAINSFitHelper::PrintCommandLine(const bool dumpTempVolumes, const std::string 
     oss << "--outputTransform " << outputTransform  << "  \\" << std::endl;
     std::cout << oss.str() << std::endl;
     }
-  if( m_CurrentInverseGenericTransform.IsNotNull() )
-    {
-    const std::string initialTransformString("DEBUGInitialTransform_" + suffix + ".h5");
-    WriteBothTransformsToDisk(this->m_CurrentInverseGenericTransform.GetPointer(), initialTransformString, "");
-    oss << "--initialTransform " << initialTransformString  << "  \\" << std::endl;
-    }
     {
     const std::string outputVolume("DEBUGOutputVolume_" + suffix + ".nii.gz");
     oss << "--outputVolume " << outputVolume  << "  \\" << std::endl;

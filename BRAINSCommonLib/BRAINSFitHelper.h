@@ -375,7 +375,6 @@ BRAINSFitHelper::SetupRegistration()
   myHelper->SetUseExplicitPDFDerivativesMode(this->m_UseExplicitPDFDerivativesMode);
   myHelper->SetMaskInferiorCutOffFromCenter(this->m_MaskInferiorCutOffFromCenter);
   myHelper->SetCurrentGenericTransform(this->m_CurrentGenericTransform);
-  myHelper->SetCurrentInverseGenericTransform(this->m_CurrentInverseGenericTransform);
   myHelper->SetSplineGridSize(this->m_SplineGridSize);
   myHelper->SetCostFunctionConvergenceFactor(this->m_CostFunctionConvergenceFactor);
   myHelper->SetProjectedGradientTolerance(this->m_ProjectedGradientTolerance);
@@ -408,7 +407,7 @@ BRAINSFitHelper::RunRegistration()
     }
   myHelper->Update();
   this->m_CurrentGenericTransform = myHelper->GetCurrentGenericTransform();
-  this->m_CurrentInverseGenericTransform = myHelper->GetCurrentInverseGenericTransform();
+  this->m_CurrentInverseGenericTransform = this->m_CurrentGenericTransform->GetInverseTransform();
   this->m_ActualNumberOfIterations = myHelper->GetActualNumberOfIterations();
   this->m_PermittedNumberOfIterations = myHelper->GetPermittedNumberOfIterations();
   this->m_GenericTransformList.resize(myHelper->GetGenericTransformListPtr()->size() );
