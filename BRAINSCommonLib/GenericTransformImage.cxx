@@ -457,11 +457,14 @@ void WriteTransformToDisk(GenericTransformType const *const MyTransform, const s
     *  Convert the transform to the appropriate assumptions and write it out as
     *requested.
     */
+  std::string inverseTransformFileName = TransformFilename;
+  inverseTransformFileName.replace(inverseTransformFileName.end() - 3, inverseTransformFileName.end(), "_Inverse.h5");
     {
     typedef itk::TransformFileWriter TransformWriterType;
     TransformWriterType::Pointer transformWriter =  TransformWriterType::New();
+    TransformWriterType::Pointer inverseTransformWriter =  TransformWriterType::New();
     transformWriter->SetFileName( TransformFilename.c_str() );
-
+    inverseTransformWriter->SetFileName( inverseTransformFileName.c_str() );
     const std::string transformFileType = MyTransform->GetNameOfClass();
     if( transformFileType == "BSplineDeformableTransform" )
       {
@@ -471,27 +474,30 @@ void WriteTransformToDisk(GenericTransformType const *const MyTransform, const s
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
         }
-
-      // NOTE: Order was reversed in order to get BSpline first, then Bulk
-      // transform in order to
-      // try to appease Slicer3.
-      transformWriter->AddTransform(tempInitializerITKTransform);
+      // NOTE: Order was reversed to get BSpline first, then Bulk
+      // transform in an attempt to appease Slicer3.
       // Bulk transform is assumed to be second in Slicer3.
+      transformWriter->AddTransform(tempInitializerITKTransform);
       transformWriter->AddTransform( tempInitializerITKTransform->GetBulkTransform() );
+      inverseTransformWriter->AddTransform(tempInitializerITKTransform->GetInverseTransform());
+      inverseTransformWriter->AddTransform( tempInitializerITKTransform->GetBulkTransform()->GetInverseTransform() );
       }
     else
       {
       transformWriter->AddTransform(MyTransform);
+      inverseTransformWriter->AddTransform(MyTransform->GetInverseTransform());
       }
+
     try
       {
       transformWriter->Update();
+      inverseTransformWriter->Update();
       }
     catch( itk::ExceptionObject & excp )
       {
       throw excp;
       }
-    // Test if the file exists.
+    // Test if the forward file exists.
     if( !itksys::SystemTools::FileExists( TransformFilename.c_str() ) )
       {
       itk::ExceptionObject e(__FILE__, __LINE__, "Failed to write file", "WriteTransformToDisk");
