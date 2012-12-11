@@ -7,7 +7,6 @@ import nipype.interfaces.io as nio   # Data i/o
 import nipype.pipeline.engine as pe  # pypeline engine
 
 from BRAINSABCext import *
-
 """
     from WorkupT1T2TissueClassify import CreateTissueClassifyWorkflow
     myLocalTCWF= CreateTissueClassifyWorkflow("TissueClassify")
@@ -71,7 +70,6 @@ def getListIndexOrNoneIfOutOfRange( imageList, index):
       return imageList[index]
     else:
       return None
-
 def MakePosteriorDictionaryFunc(posteriorImages):
     from PipeLineFunctionHelpers import POSTERIORS
     if len(POSTERIORS) != len(posteriorImages):
