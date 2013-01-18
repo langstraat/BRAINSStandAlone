@@ -312,7 +312,6 @@ if __name__ == "__main__":
     ## For the current nipype processing, the environments are set prior to running this script, so this code is not
     ## needed for using this script within the baw running envirionment.
     # TODO: Make parser group "Environment"
-    parser.add_argument('--subjects_dir', action='store', dest='subjects_dir', help='FreeSurfer subjects directory')
     # TODO: parser.add_argument('--FSHomeDir', action='store', dest='FREESURFER_HOME',
     # TODO:                  default='/ipldev/sharedopt/20110601/MacOSX_10.6/freesurfer',
     # TODO:                  help='Location of FreeSurfer (differs for Mac and Linux environments')
@@ -337,17 +336,20 @@ if __name__ == "__main__":
     autorecon.add_argument('--subject_id', action='store', dest='subject_id', help='Subject_Session')
     autorecon.add_argument('--brainmask', action='store', dest='brainmask',
                            help='The normalized T1 image with the skull removed. Normalized 0-110 where white matter=110.')
+    autorecon.add_argument('--subjects_dir', action='store', dest='subjects_dir', help='FreeSurfer subjects directory')
     autorecon.set_defaults(func=runAutoRecon)
     # Create -base subparser
     template = subparsers.add_parser('template', help='Link to recon-all longitudinal processing: http://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing')
     template.add_argument('--subjectTemplate_id', action='store', dest='subjectTemplate_id', help='Subject_template')
     template.add_argument('--session_ids', action='store', dest='session_ids', nargs='+', help='List of sessions for a subject template')
+    template.add_argument('--subjects_dir', action='store', dest='subjects_dir', help='FreeSurfer subjects directory')
     template.set_defaults(func=runSubjectTemplate)
     # Create -long subparser
     longitudinal = subparsers.add_parser('longitudinal', help='Link to recon-all longitudinal processing: http://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing')
     longitudinal.add_argument('--session_id', action='store', dest='session_id', help='Session for a subject longitudinal analysis (in --session_ids from "template" option)')
     longitudinal.add_argument('--template_id', action='store', dest='template_id', help='Template folder name (--subjectTemplate_id from "template" option)')
+    longitudinal.add_argument('--subjects_dir', action='store', dest='subjects_dir', help='FreeSurfer subjects directory')
     longitudinal.set_defaults(func=runLongitudinal)
 
     all_args = parser.parse_args()
-    all_args.func(args, local_FREESURFER_HOME, local_FS_SCRIPT)
+    all_args.func(all_args, local_FREESURFER_HOME, local_FS_SCRIPT)
