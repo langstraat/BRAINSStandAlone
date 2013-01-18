@@ -41,10 +41,10 @@ def IsFirstNewerThanSecond(firstFile, secondFile):
 def run_mri_convert_script(niftiVol, mgzVol, subjects_dir, FREESURFER_HOME, FS_SCRIPT):
     FS_SCRIPT_FN = os.path.join(FREESURFER_HOME, FS_SCRIPT)
     mri_convert_script = """#!/bin/bash
-    export FREESURFER_HOME={FSHOME}
-    export SUBJECTS_DIR={FSSUBJDIR}
-    source {SOURCE_SCRIPT}
-    {FSHOME}/bin/mri_convert --conform --out_data_type uchar {invol} {outvol}""".format(SOURCE_SCRIPT=FS_SCRIPT_FN,
+export FREESURFER_HOME={FSHOME}
+export SUBJECTS_DIR={FSSUBJDIR}
+source {SOURCE_SCRIPT}
+{FSHOME}/bin/mri_convert --conform --out_data_type uchar {invol} {outvol}""".format(SOURCE_SCRIPT=FS_SCRIPT_FN,
                                                                                          FSHOME=FREESURFER_HOME,
                                                                                          FSSUBJDIR=subjects_dir,
                                                                                          invol=niftiVol,
@@ -66,11 +66,11 @@ def run_mri_convert_script(niftiVol, mgzVol, subjects_dir, FREESURFER_HOME, FS_S
 def run_mri_mask_script(output_brainmask_fn_mgz, output_custom_brainmask_fn_mgz, output_nu_fn_mgz, subjects_dir, FREESURFER_HOME, FS_SCRIPT):
     FS_SCRIPT_FN = os.path.join(FREESURFER_HOME, FS_SCRIPT)
     mri_mask_script = """#!/bin/bash
-    export FREESURFER_HOME={FSHOME}
-    export SUBJECTS_DIR={FSSUBJDIR}
-    source {SOURCE_SCRIPT}
-    {FSHOME}/bin/mri_add_xform_to_header -c {CURRENT}/transforms/talairach.xfm {maskvol} {maskvol}
-    {FSHOME}/bin/mri_mask {invol} {maskvol} {outvol}
+export FREESURFER_HOME={FSHOME}
+export SUBJECTS_DIR={FSSUBJDIR}
+source {SOURCE_SCRIPT}
+{FSHOME}/bin/mri_add_xform_to_header -c {CURRENT}/transforms/talairach.xfm {maskvol} {maskvol}
+{FSHOME}/bin/mri_mask {invol} {maskvol} {outvol}
 """.format(SOURCE_SCRIPT=FS_SCRIPT_FN,
            FSHOME=FREESURFER_HOME,
            FSSUBJDIR=subjects_dir,
@@ -185,11 +185,11 @@ def runAutoReconStage(subject_id, StageToRun, t1_fn, subjects_dir, FREESURFER_HO
         mkdir_p(os.path.dirname(orig_001_mgz_fn))
         run_mri_convert_script(t1_fn, orig_001_mgz_fn, subjects_dir, FREESURFER_HOME, FS_SCRIPT)
     auto_recon_script="""#!/bin/bash
-        export FREESURFER_HOME={FSHOME}
-        export SUBJECTS_DIR={FSSUBJDIR}
-        source {SOURCE_SCRIPT}
-        {FSHOME}/bin/recon-all -debug -subjid {SUBJID} -make autorecon{AUTORECONSTAGE}
-    """.format(SOURCE_SCRIPT=FS_SCRIPT_FN,
+export FREESURFER_HOME={FSHOME}
+export SUBJECTS_DIR={FSSUBJDIR}
+source {SOURCE_SCRIPT}
+{FSHOME}/bin/recon-all -debug -subjid {SUBJID} -make autorecon{AUTORECONSTAGE}
+""".format(SOURCE_SCRIPT=FS_SCRIPT_FN,
                FSHOME=FREESURFER_HOME,
                FSSUBJDIR=subjects_dir,
                AUTORECONSTAGE=StageToRun,
@@ -215,16 +215,19 @@ def runSubjectTemplate(args, FREESURFER_HOME, FS_SCRIPT):
     subjectTemplate_id = args.subjectTemplate_id
     session_ids = args.session_ids
     subjects_dir = args.subjects_dir
-    assert type(session_ids, list), "Must input a list of session_ids"
+    print "X"*80
+    print "subjectTemplate_id :{0}:".format(subjectTemplate_id)
+    print "Input a list of session_ids :{0}:".format(session_ids)
+    print "subjects_dir :{0}:".format(subjects_dir)
+    print "X"*80
+    assert type(session_ids) == type(list()), "Must input a list of session_ids :{0}:".format(session_ids)
     StageToRun = "Within-SubjectTemplate"
     FS_SCRIPT_FN = os.path.join(FREESURFER_HOME, FS_SCRIPT)
-    auto_recon_script="""
-    #!/bin/bash
-    export FREESURFER_HOME={FSHOME}
-    export SUBJECTS_DIR={FSSUBJDIR}
-    source {SOURCE_SCRIPT}
-    {FSHOME}/bin/recon-all -debug -base {TEMPLATEID}
-    """.format(SOURCE_SCRIPT=FS_SCRIPT_FN,
+    auto_recon_script="""#!/bin/bash
+export FREESURFER_HOME={FSHOME}
+export SUBJECTS_DIR={FSSUBJDIR}
+source {SOURCE_SCRIPT}
+{FSHOME}/bin/recon-all -debug -base {TEMPLATEID} """.format(SOURCE_SCRIPT=FS_SCRIPT_FN,
                FSHOME=FREESURFER_HOME,
                FSSUBJDIR=subjects_dir,
                TEMPLATEID=subjectTemplate_id)
@@ -255,14 +258,13 @@ def runLongitudinal(args, FREESURFER_HOME, FS_SCRIPT):
     assert type(session_id, str), "Must input a list of session_ids"
     StageToRun = "Longitudinal"
     FS_SCRIPT_FN = os.path.join(FREESURFER_HOME, FS_SCRIPT)
-    auto_recon_script = """
-    #!/bin/bash
-    export FREESURFER_HOME={FSHOME}
-    export SUBJECTS_DIR={FSSUBJDIR}
-    source {SOURCE_SCRIPT}
-    {FSHOME}/bin/recon-all -debug -long {TIMEPOINT} {TEMPLATEID} -all
-    mv -n {FSSUBJDIR}/{TIMEPOINT}.long.{TEMPLATEID} {FSSUBJDIR}/{TEMPLATEID}_{TIMEPOINT}.long
-    """.format(SOURCE_SCRIPT=FS_SCRIPT_FN,
+    auto_recon_script = """#!/bin/bash
+export FREESURFER_HOME={FSHOME}
+export SUBJECTS_DIR={FSSUBJDIR}
+source {SOURCE_SCRIPT}
+{FSHOME}/bin/recon-all -debug -long {TIMEPOINT} {TEMPLATEID} -all
+mv -n {FSSUBJDIR}/{TIMEPOINT}.long.{TEMPLATEID} {FSSUBJDIR}/{TEMPLATEID}_{TIMEPOINT}.long
+""".format(SOURCE_SCRIPT=FS_SCRIPT_FN,
                FSHOME=FREESURFER_HOME,
                FSSUBJDIR=subjects_dir,
                TEMPLATEID=template_id,
@@ -340,9 +342,10 @@ if __name__ == "__main__":
     autorecon.set_defaults(func=runAutoRecon)
     # Create -base subparser
     template = subparsers.add_parser('template', help='Link to recon-all longitudinal processing: http://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing')
-    template.add_argument('--subjectTemplate_id', action='store', dest='subjectTemplate_id', help='Subject_template')
-    template.add_argument('--session_ids', action='store', dest='session_ids', nargs='+', help='List of sessions for a subject template')
-    template.add_argument('--subjects_dir', action='store', dest='subjects_dir', help='FreeSurfer subjects directory')
+    template.add_argument('--subjectTemplate_id', action='store', dest='subjectTemplate_id', required=True, help='Subject_template')
+    template.add_argument('--session_ids', action='store', dest='session_ids', nargs='+', required=True, help='List of sessions for a subject template')
+    template.add_argument('--subjects_dir', action='store', dest='subjects_dir',required=True, help='FreeSurfer subjects directory')
+    #template.add_argument('--subject_id', action='store', dest='subject_id',required=True,  help='Subject_Session')
     template.set_defaults(func=runSubjectTemplate)
     # Create -long subparser
     longitudinal = subparsers.add_parser('longitudinal', help='Link to recon-all longitudinal processing: http://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing')
